@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.Email;
@@ -25,6 +26,7 @@ public class User {
     
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
+    @Indexed(unique = true)
     private String email;
     
     @NotNull(message = "Age is required")
