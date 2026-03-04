@@ -14,9 +14,9 @@
     
     <groupId>com.example</groupId>
     <artifactId>mongodb-demo</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
     <name>mongodb-demo</name>
-    <description>Demo project for Spring Boot with MongoDB and Security</description>
+    <description>Demo project for Spring Boot with MongoDB and Method Level Security</description>
     
     <properties>
         <java.version>11</java.version>
@@ -42,6 +42,13 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        
+        <!-- JSR-250 API for @RolesAllowed -->
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
         </dependency>
         
         <!-- Lombok -->

@@ -17,9 +17,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
             .authorizeRequests()
-                // Публичные endpoint'ы (доступны без авторизации)
+                // Публичные endpoint'ы
                 .antMatchers("/api/public/**").permitAll()
-                // Все остальные endpoint'ы требуют авторизации
+                // Все остальные endpoint'ы требуют аутентификации
                 .anyRequest().authenticated()
                 .and()
             .formLogin()
@@ -31,20 +31,38 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .permitAll()
                 .logoutSuccessUrl("/api/public/info")
                 .and()
-            .csrf().disable(); // Для упрощения тестирования через Postman
+            .csrf().disable();
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
             .inMemoryAuthentication()
-                .withUser("user")
-                    .password(passwordEncoder().encode("password"))
-                    .roles("USER")
+                // Пользователи для демонстрации безопасности на уровне методов
+                .withUser("reader")
+                    .password(passwordEncoder().encode("reader"))
+                    .roles("READ")
+                .and()
+                .withUser("writer")
+                    .password(passwordEncoder().encode("writer"))
+                    .roles("WRITE")
+                .and()
+                .withUser("deleter")
+                    .password(passwordEncoder().encode("deleter"))
+                    .roles("DELETE")
+                .and()
+                .withUser("editor")
+                    .password(passwordEncoder().encode("editor"))
+                    .roles("READ", "WRITE")
                 .and()
                 .withUser("admin")
                     .password(passwordEncoder().encode("admin"))
-                    .roles("ADMIN", "USER");
+                    .roles("READ", "WRITE", "DELETE")
+                .and()
+                // Пользователь из предыдущего задания
+                .withUser("user")
+                    .password(passwordEncoder().encode("password"))
+                    .roles("USER");
     }
 
     @Bean

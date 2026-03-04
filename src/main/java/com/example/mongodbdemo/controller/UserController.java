@@ -21,17 +21,15 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
-    // GET всех пользователей - требуют авторизации (USER или ADMIN)
     @GetMapping
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('READ', 'ADMIN', 'USER')")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userRepository.findAll();
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
-    // GET пользователя по ID - требуют авторизации
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('READ', 'ADMIN', 'USER')")
     public ResponseEntity<?> getUserById(@PathVariable String id) {
         Optional<User> user = userRepository.findById(id);
         
@@ -40,22 +38,19 @@ public class UserController {
         } else {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "User not found with id: " + id);
-            errorResponse.put("timestamp", String.valueOf(System.currentTimeMillis()));
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         }
     }
 
-    // GET поиск по имени - требуют авторизации
     @GetMapping("/search/name")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('READ', 'ADMIN', 'USER')")
     public ResponseEntity<List<User>> getUsersByName(@RequestParam String name) {
         List<User> users = userRepository.findByNameIgnoreCase(name);
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
-    // GET поиск по возрасту - требуют авторизации
     @GetMapping("/search/age-range")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('READ', 'ADMIN', 'USER')")
     public ResponseEntity<List<User>> getUsersByAgeRange(
             @RequestParam Integer minAge,
             @RequestParam Integer maxAge) {
@@ -63,9 +58,8 @@ public class UserController {
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
-    // GET пользователя по email - требуют авторизации
     @GetMapping("/search/email")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('READ', 'ADMIN', 'USER')")
     public ResponseEntity<?> getUserByEmail(@RequestParam String email) {
         User user = userRepository.findByEmailAddress(email);
         if (user != null) {
@@ -77,15 +71,12 @@ public class UserController {
         }
     }
 
-    // POST создание пользователя - только ADMIN
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createUser(@Valid @RequestBody User user) {
-        // Проверка на существующий email
         if (userRepository.existsByEmail(user.getEmail())) {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Email already exists: " + user.getEmail());
-            errorResponse.put("timestamp", String.valueOf(System.currentTimeMillis()));
             return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
         }
         
@@ -93,7 +84,6 @@ public class UserController {
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 
-    // PUT обновление пользователя - только ADMIN
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateUser(@PathVariable String id, @Valid @RequestBody User userDetails) {
@@ -102,18 +92,15 @@ public class UserController {
         if (!userOptional.isPresent()) {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "User not found with id: " + id);
-            errorResponse.put("timestamp", String.valueOf(System.currentTimeMillis()));
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         }
         
         User user = userOptional.get();
         
-        // Проверка уникальности email при его изменении
         if (!user.getEmail().equals(userDetails.getEmail()) && 
             userRepository.existsByEmail(userDetails.getEmail())) {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Email already exists: " + userDetails.getEmail());
-            errorResponse.put("timestamp", String.valueOf(System.currentTimeMillis()));
             return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
         }
         
@@ -125,7 +112,6 @@ public class UserController {
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
-    // DELETE пользователя - только ADMIN
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteUser(@PathVariable String id) {
@@ -134,7 +120,6 @@ public class UserController {
         if (!user.isPresent()) {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "User not found with id: " + id);
-            errorResponse.put("timestamp", String.valueOf(System.currentTimeMillis()));
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         }
         
@@ -142,12 +127,9 @@ public class UserController {
         
         Map<String, String> successResponse = new HashMap<>();
         successResponse.put("message", "User deleted successfully");
-        successResponse.put("id", id);
-        successResponse.put("timestamp", String.valueOf(System.currentTimeMillis()));
         return new ResponseEntity<>(successResponse, HttpStatus.OK);
     }
 
-    // DELETE всех пользователей - только ADMIN
     @DeleteMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteAllUsers() {
@@ -157,7 +139,6 @@ public class UserController {
         Map<String, Object> successResponse = new HashMap<>();
         successResponse.put("message", "All users deleted successfully");
         successResponse.put("deletedCount", count);
-        successResponse.put("timestamp", String.valueOf(System.currentTimeMillis()));
         return new ResponseEntity<>(successResponse, HttpStatus.OK);
     }
 }
